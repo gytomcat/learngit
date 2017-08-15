@@ -348,7 +348,7 @@ ${.now}
 			<br/>
 		</#list>
 		<br/>
-		<#if ps.nowStatus &gt; 7>
+		<#if ps.nowStatus &gt; 7 || ps.nowStatus == 0>
 		交付文件：<br/>
 		<#list ps.checkFiles as bfile>
 			${bfile.filePath}/${bfile.createTime?string("yyyy-MM-dd HH:mm:ss")}/
