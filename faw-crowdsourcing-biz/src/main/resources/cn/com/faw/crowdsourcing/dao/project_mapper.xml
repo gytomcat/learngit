@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+项目数据库操作Mapper(SQL)文件
+Table: FAW_PROJECT
+DAO:   cn.com.faw.crowdsourcing.dao.ProjectDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.ProjectDAO">
+
+	<!-- 添加项目 -->
+	<insert id="insertIntoProject">
+		insert into FAW_PROJECT (
+			create_time, update_time, enabled, 
+            NOW_STATUS, 
+            COMPANY_ID, 
+            AGENCY_ID, 
+            RELEASE_ID, 
+            RELEASE_TIME, 
+            REVIEW_TIME, 
+            BID_END_TIME, 
+            IS_OPEN, 
+            IS_RELEASE, 
+            PROJECT_TITLE, 
+            PROJECT_DESC, 
+            PRICE, 
+            PERIOD, 
+            BID_AMOUNT, 
+            WIN_AMOUNT, 
+            SELECT_TIME, 
+            WIN_BID_ID, 
+            IDEA_ID, 
+            IS_PATENT
+		)
+		values (
+			now(), now(), 'Y', 
+			#{nowStatus}, 
+			#{companyId}, 
+			#{agencyId}, 
+			#{releaseId}, 
+			#{releaseTime}, 
+			#{reviewTime}, 
+			#{bidEndTime}, 
+			#{isOpen}, 
+			#{isRelease}, 
+			#{projectTitle}, 
+			#{projectDesc}, 
+			#{price}, 
+			#{period}, 
+			#{bidAmount}, 
+			#{winAmount}, 
+			#{selectTime}, 
+			#{winBidId}, 
+			#{ideaId}, 
+			#{isPatent}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找项目数量 -->
+	<select id="selectProjectCount" resultType="int">
+		select count(*)
+		  from FAW_PROJECT t,FAW_COMPANY c
+		 where t.enabled = 'Y'
+		   and t.company_id = c.id
+		 <if test="nowStatus != null and nowStatus != ''">
+		   and t.NOW_STATUS = #{nowStatus}
+		 </if>
+		 <if test="companyId != null and companyId != ''">
+		   and t.company_id = #{companyId}
+		 </if>
+		 <if test="agencyId != null and agencyId != ''">
+		   and t.AGENCY_ID = #{agencyId}
+		 </if>
+		 <if test="releaseId != null and releaseId != ''">
+		   and t.RELEASE_ID = #{releaseId}
+		 </if>
+	</select>
+	
+	<!-- 查找项目列表 -->
+	<select id="selectProjectList" resultType="project">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.COMPANY_ID companyId, 
+               t.AGENCY_ID agencyId, 
+               t.RELEASE_ID releaseId, 
+               t.RELEASE_TIME releaseTime, 
+               t.REVIEW_TIME reviewTime, 
+               t.BID_END_TIME bidEndTime, 
+               t.IS_OPEN isOpen, 
+               t.IS_RELEASE isRelease, 
+               t.PROJECT_TITLE projectTitle, 
+               t.PROJECT_DESC projectDesc, 
+               t.PRICE price, 
+               t.PERIOD period, 
+               t.BID_AMOUNT bidAmount, 
+               t.WIN_AMOUNT winAmount, 
+               t.SELECT_TIME selectTime, 
+               t.WIN_BID_ID winBidId, 
+               t.IDEA_ID ideaId, 
+               t.IS_PATENT isPatent, 
+               t.score score,
+		       t.patent_desc patentDesc,
+               c.company_name companyName
+		  from FAW_PROJECT t,FAW_COMPANY c
+		 where t.enabled = 'Y'
+		   and t.company_id = c.id
+		 <if test="nowStatus != null and nowStatus != ''">
+		   and t.NOW_STATUS = #{nowStatus}
+		 </if>
+		 <if test="companyId != null and companyId != ''">
+		   and t.company_id = #{companyId}
+		 </if>
+		 <if test="agencyId != null and agencyId != ''">
+		   and t.AGENCY_ID = #{agencyId}
+		 </if>
+		 <if test="releaseId != null and releaseId != ''">
+		   and t.RELEASE_ID = #{releaseId}
+		 </if>
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找项目 -->
+	<select id="selectProjectById" resultType="project">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.COMPANY_ID companyId, 
+               t.AGENCY_ID agencyId, 
+               t.RELEASE_ID releaseId, 
+               t.RELEASE_TIME releaseTime, 
+               t.REVIEW_TIME reviewTime, 
+               t.BID_END_TIME bidEndTime, 
+               t.IS_OPEN isOpen, 
+               t.IS_RELEASE isRelease, 
+               t.PROJECT_TITLE projectTitle, 
+               t.PROJECT_DESC projectDesc, 
+               t.PRICE price, 
+               t.PERIOD period, 
+               t.BID_AMOUNT bidAmount, 
+               t.WIN_AMOUNT winAmount, 
+               t.SELECT_TIME selectTime, 
+               t.WIN_BID_ID winBidId, 
+               t.IDEA_ID ideaId, 
+               t.IS_PATENT isPatent	, 
+               t.score score,
+		       t.patent_desc patentDesc,
+               c.company_name companyName,
+               m.full_name memberName	  
+          from FAW_PROJECT t,FAW_COMPANY c,FAW_MEMBER m
+		 where t.company_id = c.id
+		   and t.release_id = m.id
+		   and t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新项目 -->
+	<update id="updateProjectById">
+		update FAW_PROJECT t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}, 
+               t.COMPANY_ID = #{companyId}, 
+               t.AGENCY_ID = #{agencyId}, 
+               t.RELEASE_ID = #{releaseId}, 
+               t.RELEASE_TIME = #{releaseTime}, 
+               t.REVIEW_TIME = #{reviewTime}, 
+               t.BID_END_TIME = #{bidEndTime}, 
+               t.IS_OPEN = #{isOpen}, 
+               t.IS_RELEASE = #{isRelease}, 
+               t.PROJECT_TITLE = #{projectTitle}, 
+               t.PROJECT_DESC = #{projectDesc}, 
+               t.PRICE = #{price}, 
+               t.PERIOD = #{period}, 
+               t.BID_AMOUNT = #{bidAmount}, 
+               t.WIN_AMOUNT = #{winAmount}, 
+               t.SELECT_TIME = #{selectTime}, 
+               t.WIN_BID_ID = #{winBidId}, 
+               t.IDEA_ID = #{ideaId}, 
+               t.IS_PATENT = #{isPatent}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除项目(逻辑删除, 更新状态为不可用) -->
+	<update id="updateProjectToDisabledById">
+		update FAW_PROJECT t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID更新项目状态 -->
+	<update id="updateProjectStutsById">
+		update FAW_PROJECT t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{changeStatus}
+               <if test="winBidId != null and winBidId != ''">
+               		,WIN_BID_ID = #{winBidId}
+               </if>
+		 where t.id = #{id}
+	</update>
+	
+		<!-- 根据ID更新项目审核状态 -->
+	<update id="updateProjectAuditStutsAndTimeById">
+		update FAW_PROJECT
+		   set update_time = now(), 
+		   	   review_time = now(),
+               now_status = #{changeStatus}
+               <if test="isRelease != null">
+               ,is_release = #{isRelease}
+			   ,release_time = now()
+               </if>
+		 where id = #{id}
+	</update>
+	
+	<!-- 获取项目标签匹配供应商 -->
+	<select id="selectTagMatchServicesByProjectId" resultType="bid">
+		SELECT DISTINCT
+			c.id bidCompanyId,
+			d.id bidAgencyId,
+			m.id bidMemberId,
+			c.company_name "project.companyName"
+		FROM
+			FAW_DEPT_TAG dt
+		LEFT JOIN FAW_DEPT d ON dt.DEPT_ID = d.ID
+		LEFT JOIN FAW_COMPANY c ON c.id = d.COMPANY_ID
+		LEFT JOIN FAW_MEMBER m ON m.AGENCY_ID = d.ID
+		WHERE
+			TAG_ID IN (
+				SELECT
+					pt.TAG_ID
+				FROM
+					FAW_PROJECT_TAG pt
+				WHERE
+					pt.PROJECT_ID = #{projectId}
+			)
+	</select>
+	
+	<!--  更新评分和专利信息 -->
+	<update id="updateScoreAndPatentById">
+		update FAW_PROJECT t
+		   set t.update_time = now(),
+		       t.score = #{score},
+		       t.IS_PATENT = #{isPatent},
+		       t.patent_desc = #{patentDesc},
+		       t.now_status = #{nowStatus}
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!--  更新投标人数 -->
+	<update id="updateBidAmountById">
+		update FAW_PROJECT t
+		   set t.update_time = now(),
+		   	   t.bid_amount = t.bid_amount + 1
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!--  更新中标人数 -->
+	<update id="updateWinAmountById">
+		update FAW_PROJECT t
+		   set t.update_time = now(),
+		   	   t.win_amount = t.win_amount + 1
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 查找项目数量 -->
+	<select id="selectAllProjectCount" resultType="int">
+		select count(*)
+		  from FAW_PROJECT t,FAW_COMPANY c
+		 where t.enabled = 'Y'
+		   and t.company_id = c.id
+		   and t.is_open = 'Y'
+		 <if test="nowStatus != null and nowStatus != ''">
+		   and t.NOW_STATUS = #{nowStatus}
+		 </if>
+	</select>
+	
+	<!-- 查找项目列表 -->
+	<select id="selectAllProjectList" resultType="project">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.COMPANY_ID companyId, 
+               t.AGENCY_ID agencyId, 
+               t.RELEASE_ID releaseId, 
+               t.RELEASE_TIME releaseTime, 
+               t.REVIEW_TIME reviewTime, 
+               t.BID_END_TIME bidEndTime, 
+               t.IS_OPEN isOpen, 
+               t.IS_RELEASE isRelease, 
+               t.PROJECT_TITLE projectTitle, 
+               t.PROJECT_DESC projectDesc, 
+               t.PRICE price, 
+               t.PERIOD period, 
+               t.BID_AMOUNT bidAmount, 
+               t.WIN_AMOUNT winAmount, 
+               t.SELECT_TIME selectTime, 
+               t.WIN_BID_ID winBidId, 
+               t.IDEA_ID ideaId, 
+               t.IS_PATENT isPatent, 
+               t.score score,
+		       t.patent_desc patentDesc,
+               c.company_name companyName
+		  from FAW_PROJECT t,FAW_COMPANY c
+		 where t.enabled = 'Y'
+		   and t.company_id = c.id
+		   and t.is_open = 'Y'
+		 <if test="nowStatus != null and nowStatus != ''">
+		   and t.NOW_STATUS = #{nowStatus}
+		 </if>
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 添加我的收藏 -->
+	<insert id="insertMyCollect">
+		insert into faw_collect (
+			create_time,
+			update_time,
+			enabled,
+			project_id,
+			bid_company_id,
+			bid_agency_id,
+			bid_member_id
+		) values (
+			now(),
+			now(),
+			'Y',
+			#{projectId},
+			#{bidCompanyId},
+			#{bidAgencyId},
+			#{bidMemberId}
+		)
+		
+	</insert>
+	
+	<!-- 获取我的收藏是否数量 -->
+	<select id="selectCollectCountByProjectId" resultType="int">
+		select count(1)
+		  from faw_collect
+		 where project_id = #{projectId}
+		   and bid_member_id = #{memberId}
+		   and enabled = "Y"
+	</select>
+	
+	<!-- 查询公司信息 -->
+	<select id="selectCompanyInfoByMemberId" resultType="company">
+		select c.COMPANY_NAME companyName,
+			   c.COMPANY_DESC companyDesc
+		  from FAW_MEMBER m,FAW_COMPANY c
+		 where m.company_id = c.id
+		   and m.id = #{memberId}
+		 
+	</select>
+	
+</mapper> 

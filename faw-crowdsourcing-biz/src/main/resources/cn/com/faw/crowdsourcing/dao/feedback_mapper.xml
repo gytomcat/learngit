@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+反馈数据库操作Mapper(SQL)文件
+Table: FAW_FEEDBACK
+DAO:   cn.com.faw.crowdsourcing.dao.FeedbackDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.FeedbackDAO">
+
+	<!-- 添加反馈 -->
+	<insert id="insertIntoFeedback">
+		insert into FAW_FEEDBACK (
+			create_time, update_time, enabled, 
+            FEEDBACK_ID, 
+            FEEDBACK_TYPE, 
+            FEEDBACK_TITLE, 
+            FEEDBACK_DESC, 
+            IS_REPLY, 
+            REPLY_TIME
+		)
+		values (
+			now(), now(), 'Y', 
+			#{feedbackId}, 
+			#{feedbackType}, 
+			#{feedbackTitle}, 
+			#{feedbackDesc}, 
+			#{isReply}, 
+			#{replyTime}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找反馈数量 -->
+	<select id="selectFeedbackCount" resultType="int">
+		select count(*)
+		  from FAW_FEEDBACK t
+		 where t.enabled = 'Y'
+	</select>
+	
+	<!-- 查找反馈列表 -->
+	<select id="selectFeedbackList" resultType="feedback">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.FEEDBACK_ID feedbackId, 
+               t.FEEDBACK_TYPE feedbackType, 
+               t.FEEDBACK_TITLE feedbackTitle, 
+               t.FEEDBACK_DESC feedbackDesc, 
+               t.IS_REPLY isReply, 
+               t.REPLY_TIME replyTime
+		  from FAW_FEEDBACK t
+		 where t.enabled = 'Y'
+
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找反馈 -->
+	<select id="selectFeedbackById" resultType="feedback">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.FEEDBACK_ID feedbackId, 
+               t.FEEDBACK_TYPE feedbackType, 
+               t.FEEDBACK_TITLE feedbackTitle, 
+               t.FEEDBACK_DESC feedbackDesc, 
+               t.IS_REPLY isReply, 
+               t.REPLY_TIME replyTime		  from FAW_FEEDBACK t
+		 where t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新反馈 -->
+	<update id="updateFeedbackById">
+		update FAW_FEEDBACK t
+		   set t.update_time = now(), 
+               t.FEEDBACK_ID = #{feedbackId}, 
+               t.FEEDBACK_TYPE = #{feedbackType}, 
+               t.FEEDBACK_TITLE = #{feedbackTitle}, 
+               t.FEEDBACK_DESC = #{feedbackDesc}, 
+               t.IS_REPLY = #{isReply}, 
+               t.REPLY_TIME = #{replyTime}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除反馈(逻辑删除, 更新状态为不可用) -->
+	<update id="updateFeedbackToDisabledById">
+		update FAW_FEEDBACK t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+
+</mapper> 

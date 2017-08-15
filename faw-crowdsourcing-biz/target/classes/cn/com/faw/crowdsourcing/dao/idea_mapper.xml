@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+数据库操作Mapper(SQL)文件
+Table: FAW_IDEA
+DAO:   cn.com.faw.crowdsourcing.dao.IdeaDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.IdeaDAO">
+
+	<!-- 添加 -->
+	<insert id="insertIntoIdea">
+		insert into FAW_IDEA (
+			create_time, update_time, enabled, 
+            RELEASE_ID, 
+            RELEASE_TIME, 
+            IDEA_TITLE, 
+            IDEA_DESC, 
+            CATEGORY_ID, 
+            VIEW_COUNT, 
+            REPLY_COUNT, 
+            LAST_REPLY_ID, 
+            SYSTEM_SCORE, 
+            REVIEWER_ID, 
+            REVIEW_TIME, 
+            REVIEW_SCORE, 
+            REVIEW_DESC, 
+            IS_IDEA
+		)
+		values (
+			now(), now(), 'Y', 
+			'1',<!-- #{releaseId},--> 
+			now(),<!-- #{releaseTime},--> 
+			#{ideaTitle}, 
+			#{ideaDesc}, 
+			#{categoryId}, 
+			0, 
+			0, 
+			null, 
+			60, 
+			null, 
+			null, 
+			null, 
+			null, 
+			#{isIdea}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找数量 -->
+	<select id="selectIdeaCount" resultType="int">
+		select count(*)
+		  from FAW_IDEA t
+		 where t.enabled = 'Y'
+	</select>
+	
+	<!-- 查找列表 -->
+	<select id="selectIdeaList" resultType="idea">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.RELEASE_ID releaseId, 
+               t.RELEASE_TIME releaseTime, 
+               t.IDEA_TITLE ideaTitle, 
+               t.IDEA_DESC ideaDesc, 
+               t.CATEGORY_ID categoryId, 
+               t.VIEW_COUNT viewCount, 
+               t.REPLY_COUNT replyCount, 
+               t.LAST_REPLY_ID lastReplyId,
+               (select ifnull((select m.full_name from faw_member m where m.id =  r.REPLYER_ID),'匿名') from FAW_IDEA_REPLY r,faw_idea t where r.id = t.LAST_REPLY_ID) lastReplyContent, 
+               t.SYSTEM_SCORE systemScore, 
+               t.REVIEWER_ID reviewerId, 
+               t.REVIEW_TIME reviewTime, 
+               t.REVIEW_SCORE reviewScore, 
+               t.REVIEW_DESC reviewDesc, 
+               t.IS_IDEA isIdea
+		  from FAW_IDEA t
+		 where t.enabled = 'Y'
+		 <if test="categoryId != null and categoryId != ''">
+		    and t.CATEGORY_ID = #{categoryId}
+		 </if>
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找 -->
+	<select id="selectIdeaById" resultType="idea">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.RELEASE_ID releaseId, 
+               t.RELEASE_TIME releaseTime, 
+               t.IDEA_TITLE ideaTitle, 
+               t.IDEA_DESC ideaDesc, 
+               t.CATEGORY_ID categoryId, 
+               t.VIEW_COUNT viewCount, 
+               t.REPLY_COUNT replyCount, 
+               t.LAST_REPLY_ID lastReplyId, 
+               t.SYSTEM_SCORE systemScore, 
+               t.REVIEWER_ID reviewerId, 
+               t.REVIEW_TIME reviewTime, 
+               t.REVIEW_SCORE reviewScore, 
+               t.REVIEW_DESC reviewDesc, 
+               t.IS_IDEA isIdea		  from FAW_IDEA t
+		 where t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新 -->
+	<update id="updateIdeaById">
+		update FAW_IDEA t
+		   set t.update_time = now(), 
+               t.RELEASE_ID = #{releaseId}, 
+               t.RELEASE_TIME = #{releaseTime}, 
+               t.IDEA_TITLE = #{ideaTitle}, 
+               t.IDEA_DESC = #{ideaDesc}, 
+               t.CATEGORY_ID = #{categoryId}, 
+               t.VIEW_COUNT = #{viewCount}, 
+               t.REPLY_COUNT = #{replyCount}, 
+               t.LAST_REPLY_ID = #{lastReplyId}, 
+               t.SYSTEM_SCORE = #{systemScore}, 
+               t.REVIEWER_ID = #{reviewerId}, 
+               t.REVIEW_TIME = #{reviewTime}, 
+               t.REVIEW_SCORE = #{reviewScore}, 
+               t.REVIEW_DESC = #{reviewDesc}, 
+               t.IS_IDEA = #{isIdea}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除(逻辑删除, 更新状态为不可用) -->
+	<update id="updateIdeaToDisabledById">
+		update FAW_IDEA t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+
+</mapper> 

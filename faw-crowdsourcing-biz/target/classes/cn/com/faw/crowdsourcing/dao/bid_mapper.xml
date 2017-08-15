@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+投标数据库操作Mapper(SQL)文件
+Table: FAW_BID
+DAO:   cn.com.faw.crowdsourcing.dao.BidDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.BidDAO">
+
+	<!-- 添加投标 -->
+	<insert id="insertIntoBid">
+		insert into FAW_BID (
+			create_time, update_time, enabled, 
+            NOW_STATUS, 
+            PROJECT_ID, 
+            BID_COMPANY_ID, 
+            BID_AGENCY_ID, 
+            BID_MEMBER_ID, 
+            BID_TYPE, 
+            BID_PRICE, 
+            BID_TIME, 
+            IS_VIEW, 
+            VIEW_TIME
+		)
+		values (
+			now(), now(), 'Y', 
+			#{nowStatus}, 
+			#{projectId}, 
+			#{bidCompanyId}, 
+			#{bidAgencyId}, 
+			#{bidMemberId}, 
+			#{bidType}, 
+			#{bidPrice}, 
+			#{bidTime}, 
+			#{isView}, 
+			#{viewTime}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找投标数量 -->
+	<select id="selectBidCount" resultType="int">
+		select count(*)
+		  from FAW_BID t
+		  left join FAW_PROJECT p on t.project_id = p.id 
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		 where t.enabled = 'Y'
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+		    <if test="nowStatus != null and nowStatus != ''">
+			   and t.NOW_STATUS = #{nowStatus}
+			 </if>
+	</select>
+	
+	<!-- 查找投标列表 -->
+	<select id="selectBidList" resultType="bid">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.PROJECT_ID projectId, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId, 
+               t.BID_TYPE bidType, 
+               t.BID_PRICE bidPrice, 
+               t.BID_TIME bidTime, 
+               t.IS_VIEW isView, 
+               t.VIEW_TIME viewTime,
+               c.company_name "project.companyName",
+               p.id "project.id",
+               p.CREATE_TIME "project.createTime", 
+               p.UPDATE_TIME "project.updateTime", 
+               p.NOW_STATUS "project.nowStatus", 
+               p.RELEASE_TIME "project.releaseTime", 
+               p.REVIEW_TIME "project.reviewTime", 
+               p.BID_END_TIME "project.bidEndTime", 
+               p.IS_RELEASE "project.isRelease", 
+               p.PROJECT_TITLE "project.projectTitle", 
+               p.PROJECT_DESC "project.projectDesc", 
+               p.PRICE "project.price", 
+               p.PERIOD "project.period", 
+               p.SELECT_TIME "project.selectTime" 
+		  from FAW_BID t
+		  left join FAW_PROJECT p on t.project_id = p.id 
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		 where t.enabled = 'Y'
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+		    <if test="nowStatus != null and nowStatus != ''">
+			   and t.NOW_STATUS = #{nowStatus}
+			 </if>
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找投标 -->
+	<select id="selectBidById" resultType="bid">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.PROJECT_ID projectId, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId, 
+               t.BID_TYPE bidType, 
+               t.BID_PRICE bidPrice, 
+               t.BID_TIME bidTime, 
+               t.IS_VIEW isView, 
+               t.VIEW_TIME viewTime		  from FAW_BID t
+		 where t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新投标 -->
+	<update id="updateBidById">
+		update FAW_BID t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}, 
+               t.PROJECT_ID = #{projectId}, 
+               t.BID_COMPANY_ID = #{bidCompanyId}, 
+               t.BID_AGENCY_ID = #{bidAgencyId}, 
+               t.BID_MEMBER_ID = #{bidMemberId}, 
+               t.BID_TYPE = #{bidType}, 
+               t.BID_PRICE = #{bidPrice}, 
+               t.BID_TIME = #{bidTime}, 
+               t.IS_VIEW = #{isView}, 
+               t.VIEW_TIME = #{viewTime}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除投标(逻辑删除, 更新状态为不可用) -->
+	<update id="updateBidToDisabledById">
+		update FAW_BID t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 查找项目已经投保的服务商 -->
+	<select id="selectBidByProjectId" resultType="bid">
+		select 
+       		t.ID id, 
+            t.CREATE_TIME createTime, 
+            t.UPDATE_TIME updateTime, 
+            t.NOW_STATUS nowStatus, 
+            t.PROJECT_ID projectId, 
+            t.BID_COMPANY_ID bidCompanyId, 
+            t.BID_AGENCY_ID bidAgencyId, 
+            t.BID_MEMBER_ID bidMemberId, 
+            t.BID_TYPE bidType, 
+            t.BID_PRICE bidPrice, 
+            t.BID_TIME bidTime, 
+            t.IS_VIEW isView, 
+            t.VIEW_TIME viewTime,
+            c.company_name "project.companyName"
+          from FAW_BID t,FAW_COMPANY c
+		 where t.enabled = 'Y'
+		   and c.id = t.bid_company_id
+		   and t.project_id = #{projectId}
+	</select>
+	
+	<!-- 根据ID更新投标状态 -->
+	<update id="updateBidStatusById">
+		update FAW_BID t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}
+		 where t.id = #{id}
+	</update>
+	
+	<!-- 根据项目ID更新投标状态 -->
+	<update id="updateBidStatusByProjectId">
+		update FAW_BID t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}
+		 where t.project_id = #{projectId}
+	</update>
+	
+	<!-- 查找已投标服务商 -->
+	<select id="selectHasBidServiceByProjectId" resultType="bid">
+		select 
+               t.ID id, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId
+          from FAW_BID t
+		 where t.enabled = 'Y'
+		   and t.project_id = #{projectId}
+		   <if test="nowStatus != null and nowStatus !=''">
+		   and t.now_status = #{nowStatus}
+		   </if>
+	</select>
+	
+	<!--  修改其他服务商状态 -->
+	<update id="updateOtherSeviceStatus">
+		update FAW_BID t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}
+		 where project_id = #{projectId}
+		   and now_status = 2
+		   and t.id != #{id}
+	</update>
+	
+	<!-- 根据ID更新投标状态 -->
+	<update id="updateBidStatusByProId">
+		update FAW_BID t
+		   set t.update_time = now(), 
+               t.NOW_STATUS = #{nowStatus}
+		 where t.project_id = #{projectId}
+		   and t.NOW_STATUS > 4
+	</update>
+	
+	<!-- 查找已投标数量 -->
+	<select id="selectHasBidCount" resultType="int">
+		select count(*)
+		   from FAW_BID t
+		  left join FAW_PROJECT p on t.project_id = p.id 
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		 where t.enabled = 'Y'
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+		    <if test="nowStatus != null and nowStatus != ''">
+			   and t.NOW_STATUS = #{nowStatus}
+			 </if>
+			 <if test="nowStatus == null or nowStatus == ''">
+			   and t.NOW_STATUS &gt; 1
+			 </if>
+	</select>
+	
+	<!-- 查找已投标列表 -->
+	<select id="selectHasBidList" resultType="bid">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.PROJECT_ID projectId, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId, 
+               t.BID_TYPE bidType, 
+               t.BID_PRICE bidPrice, 
+               t.BID_TIME bidTime, 
+               t.IS_VIEW isView, 
+               t.VIEW_TIME viewTime,
+               c.company_name "project.companyName",
+               p.CREATE_TIME "project.createTime", 
+               p.UPDATE_TIME "project.updateTime", 
+               p.NOW_STATUS "project.nowStatus", 
+               p.RELEASE_TIME "project.releaseTime", 
+               p.REVIEW_TIME "project.reviewTime", 
+               p.BID_END_TIME "project.bidEndTime", 
+               p.IS_RELEASE "project.isRelease", 
+               p.PROJECT_TITLE "project.projectTitle", 
+               p.PROJECT_DESC "project.projectDesc", 
+               p.PRICE "project.price", 
+               p.PERIOD "project.period", 
+               p.SELECT_TIME "project.selectTime" 
+		  from FAW_BID t
+		  left join FAW_PROJECT p on t.project_id = p.id 
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		 where t.enabled = 'Y'
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+		    <if test="nowStatus != null and nowStatus != ''">
+			   and t.NOW_STATUS = #{nowStatus}
+			 </if>
+			 <if test="nowStatus == null or nowStatus != ''">
+			   and t.NOW_STATUS &gt; 1
+			 </if>
+      order by 
+		   t.update_time desc
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<select id="selectBidServiceByProjectId" resultType="Bid">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.PROJECT_ID projectId, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId, 
+               t.BID_TYPE bidType, 
+               t.BID_PRICE bidPrice, 
+               t.BID_TIME bidTime, 
+               t.IS_VIEW isView, 
+               t.VIEW_TIME viewTime,
+               c.company_name "project.companyName"
+		  from FAW_BID t
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		 where t.enabled = 'Y'
+		   and t.project_id = #{projectId}
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+	</select>
+	
+	<select id="selectBidCountByProjectId" resultType="int">
+		select 
+               count(1)
+		  from FAW_BID t
+		 where t.enabled = 'Y'
+		   and t.project_id = #{projectId}
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+	</select>
+	
+	<select id="selectBidsByAndMemberId" resultType="Bid">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOW_STATUS nowStatus, 
+               t.PROJECT_ID projectId, 
+               t.BID_COMPANY_ID bidCompanyId, 
+               t.BID_AGENCY_ID bidAgencyId, 
+               t.BID_MEMBER_ID bidMemberId, 
+               t.BID_TYPE bidType, 
+               t.BID_PRICE bidPrice, 
+               t.BID_TIME bidTime, 
+               t.IS_VIEW isView, 
+               t.VIEW_TIME viewTime,
+               c.company_name "project.companyName",
+               p.CREATE_TIME "project.createTime", 
+               p.UPDATE_TIME "project.updateTime", 
+               p.NOW_STATUS "project.nowStatus", 
+               p.RELEASE_TIME "project.releaseTime", 
+               p.REVIEW_TIME "project.reviewTime", 
+               p.BID_END_TIME "project.bidEndTime", 
+               p.IS_RELEASE "project.isRelease", 
+               p.PROJECT_TITLE "project.projectTitle", 
+               p.PROJECT_DESC "project.projectDesc", 
+               p.PRICE "project.price", 
+               p.PERIOD "project.period", 
+               p.SELECT_TIME "project.selectTime" 
+		  from FAW_BID t
+		  left join FAW_COMPANY c on t.BID_COMPANY_ID = c.id 
+		  left join FAW_PROJECT p on t.project_id = p.id 
+		 where t.enabled = 'Y'
+		   and t.BID_MEMBER_ID = #{bidMemberId}
+	</select>
+	
+</mapper> 

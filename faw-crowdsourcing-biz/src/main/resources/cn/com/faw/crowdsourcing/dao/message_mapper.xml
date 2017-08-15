@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+消息数据库操作Mapper(SQL)文件
+Table: FAW_MESSAGE
+DAO:   cn.com.faw.crowdsourcing.dao.MessageDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.MessageDAO">
+
+	<!-- 添加消息 -->
+	<insert id="insertIntoMessage">
+		insert into FAW_MESSAGE (
+			create_time, update_time, enabled, 
+            SENDER_ID, 
+            MSG_TITLE, 
+            MSG_DESC, 
+            MSG_TYPE, 
+            MSG_CATEGORY
+		)
+		values (
+			now(), now(), 'Y', 
+			#{senderId}, 
+			#{msgTitle}, 
+			#{msgDesc}, 
+			#{msgType}, 
+			#{msgCategory}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找消息数量 -->
+	<select id="selectMessageCount" resultType="int">
+		select count(*)
+		  from FAW_MESSAGE t
+		 where t.enabled = 'Y'
+	</select>
+	
+	<!-- 查找消息列表 -->
+	<select id="selectMessageList" resultType="message">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.SENDER_ID senderId, 
+               t.MSG_TITLE msgTitle, 
+               t.MSG_DESC msgDesc, 
+               t.MSG_TYPE msgType, 
+               t.MSG_CATEGORY msgCategory
+		  from FAW_MESSAGE t
+		 where t.enabled = 'Y'
+
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找消息 -->
+	<select id="selectMessageById" resultType="message">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.SENDER_ID senderId, 
+               t.MSG_TITLE msgTitle, 
+               t.MSG_DESC msgDesc, 
+               t.MSG_TYPE msgType, 
+               t.MSG_CATEGORY msgCategory		  from FAW_MESSAGE t
+		 where t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新消息 -->
+	<update id="updateMessageById">
+		update FAW_MESSAGE t
+		   set t.update_time = now(), 
+               t.SENDER_ID = #{senderId}, 
+               t.MSG_TITLE = #{msgTitle}, 
+               t.MSG_DESC = #{msgDesc}, 
+               t.MSG_TYPE = #{msgType}, 
+               t.MSG_CATEGORY = #{msgCategory}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除消息(逻辑删除, 更新状态为不可用) -->
+	<update id="updateMessageToDisabledById">
+		update FAW_MESSAGE t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+
+</mapper> 

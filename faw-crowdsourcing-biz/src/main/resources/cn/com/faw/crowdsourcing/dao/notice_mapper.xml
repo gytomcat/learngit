@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+======================================================================== 
+公告数据库操作Mapper(SQL)文件
+Table: FAW_NOTICE
+DAO:   cn.com.faw.crowdsourcing.dao.NoticeDAO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Author: lanqiao 
+Date:   2017-05-24
+========================================================================
+-->
+<mapper namespace="cn.com.faw.crowdsourcing.dao.NoticeDAO">
+
+	<!-- 添加公告 -->
+	<insert id="insertIntoNotice">
+		insert into FAW_NOTICE (
+			create_time, update_time, enabled, 
+            NOTICE_TITLE, 
+            NOTICE_DESC, 
+            NOTICE_TYPE
+		)
+		values (
+			now(), now(), 'Y', 
+			#{noticeTitle}, 
+			#{noticeDesc}, 
+			#{noticeType}
+		)
+		<selectKey keyProperty="id" resultType="long" order="AFTER">
+			select LAST_INSERT_ID() 
+		</selectKey> 
+	</insert>
+	
+	<!-- 查找公告数量 -->
+	<select id="selectNoticeCount" resultType="int">
+		select count(*)
+		  from FAW_NOTICE t
+		 where t.enabled = 'Y'
+	</select>
+	
+	<!-- 查找公告列表 -->
+	<select id="selectNoticeList" resultType="notice">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOTICE_TITLE noticeTitle, 
+               t.NOTICE_DESC noticeDesc, 
+               t.NOTICE_TYPE noticeType
+		  from FAW_NOTICE t
+		 where t.enabled = 'Y'
+
+      order by 
+		 <if test="orderByColumn != null and orderByColumn != ''">
+		   ${orderByColumn} ${orderByType}
+		 </if>
+		 <if test="orderByColumn == null and orderByColumn == ''">
+		   t.update_time desc
+		 </if>
+
+		 limit #{startRow}, #{pageSize}
+	</select>
+	
+	<!-- 根据ID查找公告 -->
+	<select id="selectNoticeById" resultType="notice">
+		select 
+               t.ID id, 
+               t.CREATE_TIME createTime, 
+               t.UPDATE_TIME updateTime, 
+               t.NOTICE_TITLE noticeTitle, 
+               t.NOTICE_DESC noticeDesc, 
+               t.NOTICE_TYPE noticeType		  from FAW_NOTICE t
+		 where t.enabled = 'Y'
+		   and t.id = #{id}
+	</select>
+	
+	<!-- 根据ID更新公告 -->
+	<update id="updateNoticeById">
+		update FAW_NOTICE t
+		   set t.update_time = now(), 
+               t.NOTICE_TITLE = #{noticeTitle}, 
+               t.NOTICE_DESC = #{noticeDesc}, 
+               t.NOTICE_TYPE = #{noticeType}, 
+			   t.update_time = now()
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+	
+	<!-- 根据ID删除公告(逻辑删除, 更新状态为不可用) -->
+	<update id="updateNoticeToDisabledById">
+		update FAW_NOTICE t
+		   set t.update_time = now(),
+		       t.enabled = 'N'
+		 where t.id = #{id}
+		   and t.enabled = 'Y'
+	</update>
+
+</mapper> 
