@@ -114,32 +114,32 @@
         </div>
         <div class="frame-msub-bd">
             <ul class="frame-msub-items">
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>项目列表</a>
+                <li<#if name == "all"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=all"><span class="iconfont icon-list"></span>全部项目</a>
                 </li>
-                <li<#if name == "releaseProject"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>已发布项目</a>
+                <li<#if name == "in_bidding"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=in_bidding&isOpen=Y"><span class="iconfont icon-list"></span>已发布项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>投标中项目</a>
+                <li<#if name == "bidded"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=bidded&hasBid=Y"><span class="iconfont icon-list"></span>已选标项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>已选标项目</a>
+                <li<#if name == "producting"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=producting&nowStatus=6"><span class="iconfont icon-list"></span>生产中项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>已过期项目</a>
+                <li<#if name == "accepting"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=accepting&nowStatus=7"><span class="iconfont icon-list"></span>待验收项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>已完成项目</a>
+                <li<#if name == "fineshed"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=fineshed&finished=Y"><span class="iconfont icon-list"></span>已完成项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>待验收项目</a>
+                <li<#if name == "timeout"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=timeout&nowStatus=-8"><span class="iconfont icon-list"></span>已过期项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>专利项目</a>
+                <li<#if name == "isPatent"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=isPatent&isPatent=Y"><span class="iconfont icon-list"></span>专利项目</a>
                 </li>
-                <li<#if name == "project"> class="msub-current"</#if>>
-                    <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>当月项目统计</a>
+                <li<#if name == "thisMonth"> class="msub-current"</#if>>
+                    <a href="${webServer}/project/list?name=thisMonth&thisMonth=Y"><span class="iconfont icon-list"></span>当月项目统计</a>
                 </li>
                 <li<#if name == "project"> class="msub-current"</#if>>
                     <a href="${webServer}/project/list"><span class="iconfont icon-list"></span>当前项目统计</a>
