@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import cn.com.faw.crowdsourcing.common.util.DateUtils;
 import cn.com.faw.crowdsourcing.dao.BidDAO;
 import cn.com.faw.crowdsourcing.dao.BidFileDAO;
 import cn.com.faw.crowdsourcing.dao.MemberMessageDAO;
@@ -96,11 +97,25 @@ public class ProjectService {
      *        项目分页对象
      */
     public void loadProjectList(ProjectPage page) {
+        editAdminProjectPage(page);
         Integer total = projectDAO.selectProjectCount(page);
 
         if (total > 0) {
             page.setTotalRow(total);
             page.setProjectList(projectDAO.selectProjectList(page));
+        }
+    }
+
+    private void editAdminProjectPage(ProjectPage page) {
+        if (StringUtils.isNotEmpty(page.getThisMonth())) {
+            page.setStartDate(DateUtils.getFirstDayOfMonth());
+            page.setEndDate(DateUtils.getLastDayOfMonth());
+        }
+        if (StringUtils.isEmpty(page.getStartDate())) {
+            page.setStartDate(null);
+        }
+        if (StringUtils.isEmpty(page.getEndDate())) {
+            page.setEndDate(null);
         }
     }
 

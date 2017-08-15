@@ -82,6 +82,29 @@ Date:   2017-05-24
 		 <if test="releaseId != null and releaseId != ''">
 		   and t.RELEASE_ID = #{releaseId}
 		 </if>
+		 <if test="isOpen != null and isOpen != ''">
+		   and t.IS_OPEN = #{isOpen}
+		 </if>
+		 <if test="hasBid != null and hasBid != ''">
+		   and t.NOW_STATUS in (3,4,5,6)
+		 </if>
+		 <if test="finished != null and finished != ''">
+		   and t.NOW_STATUS in (0,9)
+		 </if>
+		 <if test="isPatent != null and isPatent != ''">
+		   and t.is_patent = #{isPatent}
+		 </if>
+		 <choose>
+			  <when test="startDate != null and endDate != null">
+			  	and (select date(t.create_time)) BETWEEN (select date(#{startDate})) AND (select date(#{endDate}))
+			  </when> 
+		  	<when test="startDate != null">
+		  		and (select date(t.create_time)) &gt;= (select date(#{startDate}))
+		  	</when> 
+		  	<when test="endDate != null">
+		  		and (select date(t.create_time)) &lt;= (select date(#{endDate}))
+		  	</when> 
+		 </choose>
 	</select>
 	
 	<!-- 查找项目列表 -->
@@ -127,6 +150,29 @@ Date:   2017-05-24
 		 <if test="releaseId != null and releaseId != ''">
 		   and t.RELEASE_ID = #{releaseId}
 		 </if>
+		 <if test="isOpen != null and isOpen != ''">
+		   and t.IS_OPEN = #{isOpen}
+		 </if>
+		 <if test="isPatent != null and isPatent != ''">
+		   and t.is_patent = #{isPatent}
+		 </if>
+		 <if test="hasBid != null and hasBid != ''">
+		   and t.NOW_STATUS in (3,4,5,6)
+		 </if>
+		 <if test="finished != null and finished != ''">
+		   and t.NOW_STATUS in (0,9)
+		 </if>
+		 <choose>
+			  <when test="startDate != null and endDate != null">
+			  	and (select date(t.create_time)) BETWEEN (select date(#{startDate})) AND (select date(#{endDate}))
+			  </when> 
+		  	<when test="startDate != null">
+		  		and (select date(t.create_time)) &gt;= (select date(#{startDate}))
+		  	</when> 
+		  	<when test="endDate != null">
+		  		and (select endDate(t.create_time)) &lt;= (select date(#{endDate}))
+		  	</when> 
+		 </choose>
       order by 
 		 <if test="orderByColumn != null and orderByColumn != ''">
 		   ${orderByColumn} ${orderByType}
@@ -165,11 +211,13 @@ Date:   2017-05-24
                t.score score,
 		       t.patent_desc patentDesc,
                c.company_name companyName,
+               d.dept_name deptName,
                m.full_name memberName	  
-          from FAW_PROJECT t,FAW_COMPANY c,FAW_MEMBER m
-		 where t.company_id = c.id
-		   and t.release_id = m.id
-		   and t.enabled = 'Y'
+          from FAW_PROJECT t
+          left join FAW_COMPANY c on t.company_id = c.id
+          left join FAW_DEPT d on d.id = t.agency_id
+          left join FAW_MEMBER m on t.release_id = m.id
+		 where t.enabled = 'Y'
 		   and t.id = #{id}
 	</select>
 	

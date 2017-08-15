@@ -157,6 +157,9 @@ public class Project extends BaseModel {
     // 企业名称
     private String companyName;
 
+    // 部门名称
+    private String deptName;
+
     // 用户名称
     private String memberName;
 
@@ -467,6 +470,14 @@ public class Project extends BaseModel {
 
     public void setScore(BigDecimal score) {
         this.score = score;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
     }
 
 }

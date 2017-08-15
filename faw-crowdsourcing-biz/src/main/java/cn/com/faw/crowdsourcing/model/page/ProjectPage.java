@@ -22,6 +22,25 @@ public class ProjectPage extends Pagex {
     // 发布人ID
     private Integer releaseId;
 
+    // 是否发布
+    private String isOpen;
+
+    // 已选标
+    private String hasBid;
+
+    // 已完成
+    private String finished;
+
+    // 是否有专利
+    private String isPatent;
+
+    // 当月标识
+    private String thisMonth;
+    
+    private String startDate;
+    
+    private String endDate;
+
     // 项目列表
     private List<Project> projectList;
 
@@ -69,6 +88,62 @@ public class ProjectPage extends Pagex {
      */
     public void setProjectList(List<Project> projectList) {
         this.projectList = projectList;
+    }
+
+    public String getIsOpen() {
+        return isOpen;
+    }
+
+    public void setIsOpen(String isOpen) {
+        this.isOpen = isOpen;
+    }
+
+    public String getHasBid() {
+        return hasBid;
+    }
+
+    public void setHasBid(String hasBid) {
+        this.hasBid = hasBid;
+    }
+
+    public String getFinished() {
+        return finished;
+    }
+
+    public void setFinished(String finished) {
+        this.finished = finished;
+    }
+
+    public String getIsPatent() {
+        return isPatent;
+    }
+
+    public void setIsPatent(String isPatent) {
+        this.isPatent = isPatent;
+    }
+
+    public String getThisMonth() {
+        return thisMonth;
+    }
+
+    public void setThisMonth(String thisMonth) {
+        this.thisMonth = thisMonth;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
 }

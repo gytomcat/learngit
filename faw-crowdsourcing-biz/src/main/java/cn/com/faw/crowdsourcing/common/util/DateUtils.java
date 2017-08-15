@@ -1417,8 +1417,51 @@ public class DateUtils {
         return formatter.format(calendar.getTime());
     }
 
+    /**
+     * 获取当月的第一天
+     * 
+     * @return
+     *
+     * @author gaoyang
+     * @since 2017年8月15日
+     */
+    public static String getFirstDayOfMonth() {
+        // 获取当前年份、月份、日期
+        Calendar cale = null;
+        cale = Calendar.getInstance();
+        // 获取当月第一天和最后一天
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        // 获取前月的第一天
+        cale = Calendar.getInstance();
+        cale.add(Calendar.MONTH, 0);
+        cale.set(Calendar.DAY_OF_MONTH, 1);
+
+        return format.format(cale.getTime());
+    }
+
+    /**
+     * 获取当月的最后一天
+     * 
+     * @return
+     *
+     * @author gaoyang
+     * @since 2017年8月15日
+     */
+    public static String getLastDayOfMonth() {
+        // 获取当前年份、月份、日期
+        Calendar cale = null;
+        cale = Calendar.getInstance();
+        // 获取当月第一天和最后一天
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        // 获取前月的最后一天
+        cale = Calendar.getInstance();
+        cale.add(Calendar.MONTH, 1);
+        cale.set(Calendar.DAY_OF_MONTH, 0);
+        return format.format(cale.getTime());
+
+    }
+
     public static void main(String[] args) {
-        System.out.println(getDateSampTimestamp("2015-09-21 22:09:21"));
 
     }
 }
